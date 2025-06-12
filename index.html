@@ -15,7 +15,7 @@
 			}
 		</style>
 
-		<title>CSCS Spack Course 2024</title>
+		<title>High Performance Container Workshop at ISC 2025</title>
 
 		<link rel="stylesheet" href="dist/reset.css">
 		<link rel="stylesheet" href="dist/reveal.css">
@@ -31,902 +31,85 @@
 				<section>
 					<section>
 						<img src="dist/images/logo.svg" />
-						<h1 class="r-fit-text">CSCS Spack Course 2024</h1>
-						<p>13.06.2024 &mdash; Massimiliano Culpo &amp; Harmen Stoppels</p>
+						<h1 class="r-fit-text">High Performance Container Workshop</h1>
+						<p>ISC 2025, Hamburg &mdash; Harmen Stoppels</p>
 					</section>
 					<section>
 						<img src="dist/images/commits-cscs.svg" class="stretch" />
 					</section>
 				</section>
+				<!-- Spack refresher -->
 				<section>
 					<section>
-						<h2>Quick <img src="dist/images/logo.svg" style=" display: inline-block; vertical-align:middle;" /> refresher</h2>
-					</section>
-					<section>
-						<h2 class="r-fit-text">Software installations are <br/>more than name and version</h2>
+						<h2>Spack refresher</h2>
 						<ul>
-							<li>Need to install multiple variants of the same package</li>
-							<li class="fragment"><code>cp2k-2024.1-avx2/</code></p>
-							<li class="fragment"><code>cp2k-2024.1-avx2-cuda/</code></p>
-							<li class="fragment"><code>cp2k-2024.1-avx2-cuda-patched/</code></p>
-							<li class="fragment"><code>cp2k-2024.1-avx2-cuda-patched-final/</code></p>
+							<li>What is Spack?</li>
+							<li>Installing specs</li>
+							<li>Environments</li>
+							<li>Build from source vs. binaries</li>
 						</ul>
 					</section>
 					<section>
-						<h2 class="r-fit-text">Software installations are <br/>more than name and version</h2>
+						<h2>What is Spack?</h2>
 						<ul>
-							<li>What compiler did you use?</li>
-							<li>What architecture did you compile for?</li>
-							<li>What configure flags did you set?</li>
-							<li>What dependencies did you use?</li>
+							<li>Package manager for HPC &amp; scientific computing</li>
+							<li>Builds packages from source</li>
+							<li>Handles complex dependency graphs</li>
+							<li>Multiple versions/variants of same package</li>
+							<li>Works on Linux, macOS, Windows</li>
 						</ul>
 					</section>
 					<section>
-						<h2 class="r-fit-text">Identify installations by hash of inputs</h2>
-						<div class="r-stack stretch">
-							<img class="fragment current-visible" src="dist/images/hash.svg" />
-							<ul class="fragment">
-								<li>Merkel hash of dependency graph</li>
-								<li>Hash name, version, source, build instructions per node</li>
-								<li class="fragment"><code>cp2k-2024.1-xexq3v6d76uebivz44i7/</code></li>
-							</ul>
-						</div>
-					</section>
-					<section>
-						<h2 class="r-fit-text">Single package definitions</h2>
-						<ul>
-							<li>Single <strong><code>package.py</code></strong> for every package</li>
-							<li>Whether you're on your laptop, Alps, Lumi, Fugaku...</li>
-							<li>Avoids fragmentation</li>
-							<li>Hundreds of monthly contributors work together</li>
-						</ul>
-					</section>
-					<section>
-						<h2 class="r-fit-text">Highly flexible</h2>
+						<h2>Installing specs</h2>
 						<pre class="spec"><code data-trim data-noescape>
-							spack install hdf5
-							spack install hdf5@1.12 %gcc@10
-							spack install hdf5@1.12 +mpi ^mpich@4.2
-						</code></pre>
-					</section>
-				</section>
-				<!-- Concretizer -->
-				<section>
-					<section>
-						<h2>Why is the concretizer necessary?</h2>
-					</section>
-					<section>
-						Installations can be finely tuned with the <em>spec syntax</em>
-						<pre><code data-trim data-noescape class="spec">
-						# Specify a version range with `@`
-						hdf5@1.10.1
-
-						# Specify a compiler toolchain with `%`
-						hdf5@1.10.1 %gcc@4.7.3
-
-						# Activate or deactivate boolean variants
-						hdf5@1.10.1 +szip ~fortran
-
-						# Set multi-valued variants, or reserved keywords
-						hdf5@1.10.1 build_type=Release target=x86_64_v4
-					</code></pre>
-					</section>
-					<section>
-						Each recipe can build a software in multiple ways
-						<pre><code class="python" data-trim>
-							class Hdf5(CMakePackage):
-								"""HDF5 is a data model, library, ... """
-
-								homepage = "https://portal.hdfgroup.org"
-								url      = "https://.../hdf5-1.14.3.tar.gz"
-
-								version("1.14.2", sha256="4b4b4453251")
-								version("1.12.3", sha256="49d88f4494a")
-
-								variant("shared", default=True, description="...")
-								variant("mpi",    default=True, description="...")
-
-								depends_on("mpi", when="+mpi")
+							# Basic package
+							spack install python
+							
+							# Specific version
+							spack install python@3.11
+							
+							# With variants
+							spack install python@3.11+optimizations~debug
+							
+							# With dependencies
+							spack install numpy ^python@3.11 ^openblas
 						</code></pre>
 					</section>
 					<section>
-						That's not alike other functional package managers...
-						<pre><code class="scheme" data-trim data-noescape>
-							(define-public hello
-							(package
-								(name "hello")
-								(version "2.10")
-								(source
-								(origin
-									(method url-fetch)
-									(uri (string-append "hello-" version ".tar.gz"))
-									(sha256 (base32 "0ssi1..."))))
-									(build-system gnu-build-system)
-									(synopsis "Hello, GNU world: An example GNU package")
-									(description "GNU Hello prints ...")
-									(home-page "https://www.gnu.org/software/hello/")
-									(license gpl3+)))
+						<h2>Environments</h2>
+						<pre><code class="yaml" data-trim>
+							# spack.yaml
+							spack:
+							  specs:
+							    - python@3.11
+							    - numpy
+							    - scipy
+						</code></pre>
+						<pre><code class="shell" data-trim>
+							$ spack env create myenv
+							$ spack env activate myenv
+							$ spack install
 						</code></pre>
 					</section>
 					<section>
-						... and must solve a SAT problem to get a configuration
-						<div>
-							<img class="r-stretch" src="dist/images/concretizer.svg" style="background: none; border: 0px">
-						</div>
-					</section>
-					<section>
-						Using the concretizer allows trying different configurations much more easily
-					</section>
-					<section>
-						<h2>Hands-on</h2>
-						<pre><code class="bash" data-trim>
-							# Try different variants, see how dependencies change
-							spack spec hdf5+mpi
-							spack spec hdf5~mpi
-
-							# Use spack graph to get more insight on DAG structure
-							# To visualize: https://dreampuf.github.io/GraphvizOnline/
-							spack graph -d --color hdf5~mpi
-
-							# Use a temporary environment to avoid reconcretizing
-							spack env activate --temp
-							spack add hdf5~mpi
-							spack concretize
-							spack graph -d --color
-						</code></pre>
-					</section>
-				</section>
-				<section>
-					<section>
-						<h2>Why is the concretizer so slow?</h2>
-					</section>
-					<section>
-						Dependency resolution is NP-hard!
-						<p class="fragment">Performance is a currency for buying features!</p>
-					</section>
-					<section>
-						Spack uses <em>clingo</em> and ASP to concretize
-					</section>
-					<section>
-						A crash course in the ASP language
-						<pre><code data-trim data-noescape data-line-numbers="1-3|5-7|9-10|12-16|18-23" class="prolog">
-							% Facts are specific "true" statements
-							node("lammps").
-							variant_set("laamps", "cuda", "false").
-
-							% Rules can derive additional facts
-							path(A, B) :- depends_on(A, B).
-							path(A, C) :- path(A, B), depends_on(B, C).
-
-							% Constraints say what cannot happen
-							:- path(A, B), path(B, A).
-
-							% Choice rules gives the solver freedom to choose
-							% from possible options
-							1 { version(Package, V)
-									: possible_version(Package, V) } 1
-								:- node(Package).
-
-							% Minimization defines the "optimal" solution
-							#minimize{
-								Weight,Package
-								: version_weight(Package, Weight),
-								node(Package)
-							}.
-						</code></pre>
-					</section>
-					<section>
-						How does clingo solve the ASP problem?
-						<div>
-							<img  src="dist/images/asp-grounding.svg" style="background: none; border: 0px">
-						</div>
-					</section>
-					<section>
-						Where is time spent, then?
-						<pre><code data-trim data-noescape data-line-numbers="1|2,8|3,8|4,9|5,9|6,8-9" class="console">
-							$ spack solve --timers hdf5
-							setup          6.676s
-							load           0.979s
-							ground         3.700s
-							solve          7.666s
-							total         19.897s
-							[ ... ]
-							lib/spack/spack/solver/asp.py
-							lib/spack/spack/solver/concretize.lp
-						</code></pre>
-					</section>
-					<section>
-						<h2>Hands-on</h2>
-						<pre><code class="bash" data-trim>
-							# Try to time different concretizations
-							spack solve --timers ...
-						</code></pre>
-					</section>
-				</section>
-				<section>
-					<section>
-						<h2>How does reuse work?</h2>
-					</section>
-					<section>
-						"Reuse" actively tries to prefer known configurations to
-						configurations yet to be built.
-					</section>
-					<section>
-						Hash matches are very sensitive to small changes
-						<div>
-							<img class="r-stretch" src="dist/images/hash-cache.svg" style="background: none; border: 0px">
-						</div>
-					</section>
-					<section>
-						Spack can also actively try to reuse
-						<pre><code data-trim data-noescape class="yaml">
-							concretizer:
-								# Whether to consider installed packages or packages
-								# from buildcaches when concretizing specs. If `true`,
-								# we'll try to use as many installs/binaries as possible,
-								# rather than building. If `false`, we'll always give you
-								# a fresh concretization. If `dependencies`, we'll only
-								# reuse dependencies but give you a fresh concretization
-								# for your root specs.
-								reuse: true
-						</code></pre>
-					</section>
-					<section>
-						<pre><code data-trim data-noescape class="console">
-							spack solve --show=asp hdf5
-						</code></pre>
-						<pre><code data-trim data-noescape class="small-text prolog">
-							installed_hash("diffutils","cguhjk").
-							imposed_constraint("cguhjk","node","diffutils").
-							imposed_constraint("cguhjk","version","diffutils","3.10").
-							imposed_constraint("cguhjk","node_platform","diffutils","linux").
-							imposed_constraint("cguhjk","node_os","diffutils","ubuntu20.04").
-							imposed_constraint("cguhjk","node_target","diffutils","icelake").
-							imposed_constraint("cguhjk","variant_value","diffutils","build_system","autotools").
-							imposed_constraint("cguhjk","node_compiler","diffutils","gcc").
-							imposed_constraint("cguhjk","node_compiler_version","diffutils","gcc","9.4.0").
-							imposed_constraint("cguhjk","package_hash","diffutils","kbm...").
-							imposed_constraint("cguhjk","hash","diffutils","cguhjk").
-							imposed_constraint("cguhjk","compatible_libc","diffutils","glibc","2.31").
-							imposed_constraint("cguhjk","depends_on","diffutils","libiconv","link").
-							imposed_constraint("cguhjk","virtual_on_edge","diffutils","libiconv","iconv").
-							imposed_constraint("cguhjk","virtual_node","iconv").
-							imposed_constraint("cguhjk","hash","libiconv","iel...").
-						</code></pre>
-					</section>
-					<section>
-						Spack v0.22 allows a <em>fine-tuned</em> selection
-					</section>
-					<section>
-						Reuse only specs compiled with GCC
-						<pre><code data-trim data-noescape class="yaml">
-							concretizer:
-								reuse:
-									roots: true
-									include:
-									- "%gcc"
-						</code></pre>
-					</section>
-					<section>
-						Use OpenMPI from externals
-						<pre><code data-trim data-noescape class="yaml">
-							concretizer:
-								reuse:
-									roots: true
-									from:
-									# OpenMPI should not be reused
-									# from store or buildcache...
-									- type: local
-									  exclude: ["openmpi"]
-									- type: buildcache
-									  exclude: ["openmpi"]
-									# ...and it must be the only external used
-									- type: external
-									  include: ["openmpi"]
-						</code></pre>
-					</section>
-					<section>
-						https://cache.spack.io/
-						<div>
-							<img height="40%" src="dist/images/build-cache.png" style="background: none; border: 0px">
-						</div>
-					</section>
-					<section>
-						<h2>Hands-on</h2>
-						<pre><code data-trim data-noescape class="bash">
-							# Check that using --fresh doesn't emit hash facts
-							spack solve --fresh --show=asp cmake | less
-							spack solve --fresh cmake
-
-							# Add a mirror, retry
-							spack mirror add developer-tools https://binaries.spack.io/develop/developer-tools-manylinux2014
-							spack buildcache keys --install --trust
-							spack solve --reuse --show=asp cmake | less
-							spack install cmake
-
-							# You can also install the latest GCC from binaries
-							spack install gcc
-						</code></pre>
-					</section>
-				</section>
-				<section>
-					<section>
-						<h2>What is an optimal solution?</h2>
-					</section>
-					<section>
-						<h3>Multiple optimization criteria</h3>
+						<h2>Source vs binaries</h2>
 						<ul>
-							<li>Prefer newer versions</li>
-							<li>Prefer default values for variants</li>
-							<li>Prefer to use the same compiler across a DAG</li>
-							<li>...</li>
-						</ul>
-					</section>
-					<section>
-						A lower penalty on higher priority criteria is preferred
-						<pre><code data-trim data-noescape class="prolog">
-							% Choose most recent versions (priority 25)
-							#minimize{
-								Weight@25,node(Package)
-								: version_weight(node(Package), Weight)
-							}.
-
-							% Use default values for variants (priority 20)
-							#minimize{
-								1@20,Package,Variant,Value
-								: variant_default_not_used(Package, Variant, Value)
-							}.
-						</code></pre>
-					</section>
-					<section>
-						<img class="r-stretch" src="dist/images/sums.svg" style="background: none; border: 0px">
-					</section>
-					<section>
-
-						<code data-trim data-noescape class="console">
-							spack solve hdf5
-						</code>
-						<pre><code data-trim data-noescape class="console small-text">
-							Priority  Criterion                                            Installed  ToBuild
-							1         requirement weight                                           -        0
-							2         number of packages to build (vs. reuse)                      -        5
-							3         number of nodes from the same package                        -        0
-							4         deprecated versions used                                     0        0
-							5         version badness (roots)                                      0        0
-							6         number of non-default variants (roots)                       0        0
-							7         preferred providers for roots                                0        0
-							8         default values of variants not being used (roots)            0        0
-							9         number of non-default variants (non-roots)                  11        0
-							10        preferred providers (non-roots)                              0        0
-							11        compiler mismatches that are not from CLI                   23        0
-							12        compiler mismatches that are not from CLI                    0        0
-							13        non-preferred OS's                                          33        0
-							14        version badness (non roots)                                329        0
-							15        default values of variants not being used (non-roots)        2        0
-							16        non-preferred compilers                                     64        0
-							17        target mismatches                                            8        0
-							18        non-preferred targets                                      288        0
-							19        compiler mismatches (runtimes)                               4        0
-							20        version badness (runtimes)                                   0        0
-							21        non-preferred targets (runtimes)                             9        0
-							22        edge wiring                                                588        0
-						</code></pre>
-					</section>
-					<section>
-						<h2>Hands-on</h2>
-						<pre><code class="bash" data-trim>
-							# Check how weights are changing depending on the spec
-							# and the overall configuration.
-							spack solve --fresh cmake
-							spack solve --reuse cmake
-							spack solve --reuse hdf5
-						</code></pre>
-					</section>
-				</section>
-				<section>
-					<section>
-						<h1 class="r-fit-text">What are runtimes in Spack 0.22?</h1>
-					</section>
-					<section>
-						<h2>Compiler runtime packages</h2>
-						<pre><code data-trim data-noescape>
-							$ spack spec zlib
-							Input spec
-							--------------------------------
-							 -   zlib
-
-							Concretized
-							--------------------------------
-							 -   zlib@1.3.1 %gcc@13.2.0 ...
-							 -       ^gcc-runtime@13.2.0 %gcc@13.2.0 ...
-							[e]      ^glibc@2.38 %gcc@13.2.0 ...
-							 -       ^gmake@4.4.1 %gcc@13.2.0 ...
-						</code></pre>
-					</section>
-					<section>
-						<h2>What is <code>^gcc-runtime</code>?</h2>
-						<ul>
-							<li>A Spack installed package that copies
-								<ul>
-									<li><code>libstdc++.so.6</code></li>
-									<li><code>libgfortran.so.5</code></li>
-									<li><code>libgcc_s.so.1</code></li>
-									<li>and others</li>
-								</ul>
-							</li>
-						</ul>
-					</section>
-					<section>
-						<h2>What is <code>^libc</code></h2>
-						<ul>
-							<li>An external-only package</li>
-							<li>Virtual provided by <code>glibc</code> and <code>musl</code></li>
-							<li>Largely replaces the static <code>os</code> tag
-								<ul>
-									<li class="fragment semi-fade-out"><code>os=ubuntu24.04</code></li>
-									<li class="fragment fade-up"><code>^glibc@2.39</code></li>
-								</ul>
-							</li>
-						</ul>
-					</section>
-					<section>
-						<h2>But why?</h2>
-						<ul>
-							<li>Software does not break if compiler is uninstalled</li>
-							<li>Install from <strong>build cache</strong> without compilers</li>
-							<li>Share binaries <strong>across Linux distros</strong></li>
-							<li>Create small <strong>OCI container images</strong></li>
-							<li>Be able to express<pre>
-									<code class="spec" data-trim data-noescape>
-									depends_on("glibc@2.31:")
-									</code>
-								</pre></li>
-						</ul>
-					</section>
-					<section>
-						<h2>Can't Spack build <code>glibc</code>?</h2>
-						<ul>
-							<li>👍 Spack would be isolated from the system
-								<ul>
-									<li>Better build reproducibility</li>
-								</ul>
-							</li>
-						</ul>
-						<p>but...</p>
-						<ul>
-							<li>👎 Spack would be isolated from the system
-								<ul>
-									<li>Complicates use of system compilers</li>
-									<li>Complicates use of externals</li>
-								</ul>
-							</li>
-						</ul>
-						<p>currently a non-goal</p>
-					</section>
-					<section>
-						<h2>Why not <code>^glibc-runtime</code></h2>
-						<ul>
-							<li>... and copy <code>libc.so.6</code>, <code>libm.so.6</code></li>
-							<li>Issue is mostly with hard-coded (search) paths to and in the dynamic loader</li>
-						</ul>
-					</section>
-					<section>
-						<h2>So here we are in Spack 0.22</h2>
-						<pre><code data-trim data-noescape>
-							$ spack spec zlib
-							Input spec
-							--------------------------------
-							 -   zlib
-
-							Concretized
-							--------------------------------
-							 -   zlib@1.3.1 %gcc@13.2.0 ...
-							 -       ^gcc-runtime@13.2.0 %gcc@13.2.0 ...
-							[e]      ^glibc@2.38 %gcc@13.2.0 ...
-							 -       ^gmake@4.4.1 %gcc@13.2.0 ...
-						</code></pre>
-					</section>
-					<section>
-						<h2>Spack 0.22</h2>
-						<p>Compiler mixing support with <code>gcc-runtime</code></p>
-						<img src="dist/images/gcc-runtime-mixing.svg" class="stretch" />
-					</section>
-					<section>
-						<h2>Spack 0.22</h2>
-						<p>Compiler is still a node attribute</p>
-						<img class="stretch" src="dist/images/gcc-runtime-now.svg" />
-					</section>
-					<section>
-						<h2>Spack 0.23 🔮</h2>
-						<p>Compiler becomes an ordinary node itself</p>
-						<img src="dist/images/gcc-runtime-future.svg" class="stretch" />
-					</section>
-					<section>
-						<h2>Spack 0.23 🔮</h2>
-						<p>Express dependencies of compilers</p>
-						<div class="r-stack stretch">
-							<pre class="fragment current-visible"><code data-trim data-noescape>
-								$ clang -v
-								Ubuntu clang version 16.0.6 (15)
-								Target: x86_64-pc-linux-gnu
-								Thread model: posix
-								InstalledDir: /usr/bin
-								Found candidate GCC installation: /usr/bin/../lib/gcc/x86_64-linux-gnu/10
-								Found candidate GCC installation: /usr/bin/../lib/gcc/x86_64-linux-gnu/11
-								Found candidate GCC installation: /usr/bin/../lib/gcc/x86_64-linux-gnu/12
-								Found candidate GCC installation: /usr/bin/../lib/gcc/x86_64-linux-gnu/13
-								Selected GCC installation: /usr/bin/../lib/gcc/x86_64-linux-gnu/13
-
-								$ $(clang -print-prog-name=as) --version | head -n1
-								GNU assembler (GNU Binutils for Ubuntu) 2.41
-							</code></pre>
-							<img src="dist/images/clang-runtime.svg"  class="fragment" />
-						</div>
-					</section>
-					<section>
-						<h2>Spack 0.23 🔮</h2>
-						<ul>
-							<li>Packages can <strong>inject</strong> a runtime dependency into dependents</li>
-							<li>Runtimes will provide <strong>languages</strong> (partially in 0.22):
-								<pre><code class="python">depends_on("fortran")</code></pre>
-							</li>
-							<li>No compiler for data / pure Python packages</li>
-							<li>Runtimes for other things than compilers?</li>
+							<li><strong>Default:</strong> Build everything from source</li>
+							<li class="fragment"><strong>Binary caches:</strong> Pre-built packages</li>
+							<li class="fragment"><strong>Speed:</strong> Hours → minutes</li>
+							<li class="fragment"><strong>Reproducibility:</strong> Same binaries everywhere</li>
+							<li class="fragment"><strong>Today's focus:</strong> OCI-based binary caches</li>
 						</ul>
 					</section>
 				</section>
-				<section>
-					<section>
-						<h2>What is <code>python-venv</code>?</h2>
-					</section>
-					<section>
-						<h2>Python's injected runtime</h2>
-						<pre><code data-noescape class="spec">$ spack spec py-click
- -   py-click@8.1.7
- -       ^python@3.11.9
- -           ^ ...
- -       ^python-venv@1.0</code></pre>
-					</section>
-					<section>
-						<h2>Why <code>python-venv</code>?</h2>
-						<ul>
-							<li>The least worst solution™ for <strong>build isolation</strong></li>
-							<li>Spack environment views = Python venvs</li>
-							<li>Support external Python better</li>
-						</ul>
-					</section>
-					<section>
-						<h3>Pip and Spack are different</h3>
-						<ul>
-							<li><code>pip install</code>: all packages in a single venv dir
-							<pre>
-								<code class="bash" data-trim data-noescape>
-									$ ls my_venv/lib/python3.12/site-packages
-									black click isort
-								</code>
-							</pre></li>
-							<li><code>spack install</code>: all packages in a unique dir
-							<pre>
-								<code class="bash" data-trim data-noescape>
-									$ tree spack/opt/spack
-									├── python-3.12.1-eu5igwm
-									│   └── lib/python3.12  # standard library
-									├── py-black-24.3.0-c5yefsp
-									│   └── lib/python3.12/site-packages/black
-									├── py-click-8.1.7-253ikya
-									│   └── lib/python3.12/site-packages/click
-									└── py-isort-5.12.0-yupkr4p
-									    └── lib/python3.12/site-packages/isort
-								</code>
-							</pre></li>
-						</ul>
-					</section>
-					<section>
-						<h3>Pip and Spack are different</h3>
-						<ul>
-							<li>You <code>pip install</code> packages <strong>into a venv</strong></li>
-							<li>You <code>spack install</code> packages <strong>into the store</strong></li>
-							<li class="fragment">A Spack environment can be "installed", but no files are put "in the environment"</li>
-							<li class="fragment">Spack <strong>environment views</strong> make them look similar</li>
-						</ul>
-					</section>
-					<section>
-						<h2>Environment views</h2>
-						<pre>
-							<code class="shell" data-trim data-noescape>
-								$ spack env create --with-view ./view .
-								$ spack -e . add py-black py-isort
-								$ spack -e . install
-								$ ./view/bin/python3 -c 'import black'  # works
-							</code>
-						</pre>
-					</section>
-					<section data-transition="fade-out">
-						<h2>Environment views</h2>
-						<p>Single, flattened dir with tons of symlinks</p>
-						<img src="dist/images/create-view.svg" class="stretch">
-					</section>
-					<section data-transition="fade-in">
-						<h2>environment views</h2>
-						<p style="font-size: 0.7em">with python-venv: <code style="color: rgb(145, 0, 0)">bin/activate</code> and <code style="color: rgb(145, 0, 0)">pyvenv.cfg</code></p>
-						<img src="dist/images/create-view-venv.svg" class="stretch">
-					</section>
-					<section>
-						<h2>What was the point again?</h2>
-						<ul>
-							<li>You can <code>source bin/activate</code></li>
-							<li>Editor support (completion etc)</li>
-							<li><code>pip list</code> and <code>pip install</code> interop</li>
-						</ul>
-					</section>
-					<section>
-						<h2>Hands-on</h2>
-						<ul>
-							<li>Create an environment with view
-							<pre><code>spack env create --with-view ./view .</code></pre>
-							</li>
-							<li>add and install <code>py-pip</code> and others
-							<pre><code>spack -e . install --add py-pip py-black</code></pre></li>
-							<li>try <code>source view/bin/activate</code></li>
-							<li>and <code>pip list</code> or <code>pip install</code></li>
-						</ul>
-					</section>
-				</section>
-				<section>
-					<section>
-						<h2>What are requirements and strong preferences?</h2>
-					</section>
-					<section>
-						Enforce constraints from <code>package.py</code> or configuration
-					</section>
-					<section>
-						In a recipe:
-						<pre><code data-trim data-noescape class="python">
-						class Hdf5(CMakePackage):
-
-							requires("%gcc", msg="This package must be built with GCC")
-						</code></pre>
-						From configuration:
-						<pre><code data-trim data-noescape class="YAML">
-						packages:
-							hdf5:
-								require:
-								- spec: "%gcc"
-								  message: "This package must be built with GCC"
-						</code></pre>
-					</section>
-					<section>
-						Setting default requirements
-						<pre><code data-trim data-noescape class="YAML">
-						packages:
-							all:
-								require:
-								- "+shared +cuda"
-						</code></pre>
-						vs.
-						<pre><code data-trim data-noescape class="YAML">
-						packages:
-							all:
-								require:
-								- "+shared"
-								- "+cuda"
-						</code></pre>
-					</section>
-					<section>
-						Package specific requirements override defaults
-						<pre><code data-trim data-noescape class="YAML">
-							packages:
-								all:
-									require:
-									- 'build_type=Debug'
-									- '%clang'
-								cmake:
-									require:
-									- '%gcc'
-						</code></pre>
-					</section>
-					<section>
-						Requirements on virtual packages
-						<pre><code data-trim data-noescape class="YAML">
-							packages:
-								mpi:
-									require:
-									- 'mvapich2 %gcc'
-								mvapich2:
-									require:
-									- '~cuda'
-						</code></pre>
-					</section>
-					<section>
-					Strong preferences
-					<pre><code data-trim data-noescape class="YAML">
-						packages:
-							all:
-								prefer:
-								- 'build_type=Release'
-								- '+cuda'
-					</code></pre>
-					</section>
-					<section>
-						<h2>Hands-on</h2>
-						<pre><code data-trim data-noescape class="yaml">
-							# Try to violate this requirement, check the error message
-							packages:
-								hdf5:
-									require:
-									- spec: "~mpi"
-									  message: "HDF5 must be compiled without MPI"
-
-							# Use a strong preference, and do the same
-							packages:
-								hdf5:
-								  prefer:
-								  - "~mpi"
-
-							# Enforce virtuals in an environment using requirements
-						</code></pre>
-					</section>
-				</section>
-				<section>
-					<section>
-						<h2>How can I constrain a virtual provider in a recipe?</h2>
-					</section>
-					<section>
-						🙁 Bad, clingo can choose to add a node!
-						<pre><code class="python" data-trim data-noescape>
-							class Hdf5VolAsync(CMakePackage):
-
-								depends_on("mpi")
-
-								# openmpi can be used as a "normal" dependency
-								# clingo can choose to add it or not
-								depends_on(
-									"openmpi +thread_multiple",
-									when="^openmpi@:2"
-								)
-						</code></pre>
-					</section>
-					<section>
-						😐 Acceptable, but only for providers
-						<pre><code class="python" data-trim data-noescape>
-							class Hdf5VolAsync(CMakePackage):
-
-								depends_on("mpi")
-
-								# If using openmpi as a provider, needs
-								# thread multiple support
-								depends_on(
-									"openmpi +thread_multiple",
-									when="^[virtuals=mpi] openmpi@:2"
-								)
-						</code></pre>
-					</section>
-					<section>
-						🙂 Good for any type of dependency!
-						<pre><code class="python" data-trim data-noescape>
-							class GribUtil(CMakePackage)::
-
-								depends_on("ip")
-
-								# If ip is at version 4.1 or later, then also
-								# require precision=d
-								requires("^ip precision=d", when="^ip@4.1:")
-						</code></pre>
-					</section>
-					<section>
-						<h2>Hands-on</h2>
-						<pre><code data-trim data-noescape class="bash">
-							# Try to concretize hdf5-vol-async with different mpis
-							spack spec hdf5-vol-async ^mvapich2
-							spack spec hdf5-vol-async ^openmpi
-
-							# Edit hdf5-vol-async to use the wrong idiom and repeat
-
-							# https://dreampuf.github.io/GraphvizOnline
-							spack graph -d --color hdf5-vol-async ^mvapich2
-						</code></pre>
-					</section>
-				</section>
-				<section>
-					<section>
-						<h2>How are errors modeled?</h2>
-					</section>
-					<section>
-						<code>clingo</code> is not that helpful on unsat problems
-						<pre><code data-trim data-noescape data-line-numbers="1-4|4" class="prolog">
-							node("a").
-
-							attribute(P) :- node(P).
-							:- attribute(P).
-						</code></pre>
-						<pre><code data-trim data-noescape class="console">
-							$ clingo example.lp
-							clingo version 5.6.2
-							Reading from example.lp
-							Solving...
-							UNSATISFIABLE
-						</code></pre>
-						<pre><code data-trim data-noescape class="console">
-							$ spack spec foo
-							==> Error: UNSATISFIABLE
-						</code></pre>
-					</section>
-					<section>
-						Make errors part of a valid solution
-						<pre><code data-trim data-noescape data-line-numbers="1-4|4" class="prolog">
-							node("a").
-
-							attribute(P) :- node(P).
-							error("{P} cannot have an attribute!", P) :- attribute(P).
-						</code></pre>
-						<pre><code data-trim data-noescape class="console">
-							$ clingo example.lp
-							clingo version 5.6.2
-							Reading from example.lp
-							Solving...
-							Answer: 1
-							node("a") attribute("a") error("{P} cannot have an attribute!","a")
-							SATISFIABLE
-						</code></pre>
-						<pre><code data-trim data-noescape class="console">
-							$ spack spec foo
-							==> Error: foo cannot have an attribute!
-						</code></pre>
-					</section>
-					<section>
-						Highest priority optimization is <em>minimize errors</em>
-					</section>
-					<section>
-						<div>
-							<img src="dist/images/error-flow-chart.svg" style="background: none; border: 0px">
-						</div>
-					</section>
-					<section>
-						<pre><code data-trim data-noescape class="console tiny-text">
-							$ spack spec hdf5@1.14 ^cmake@3.16
-							==> Error: concretization failed for the following reasons:
-
-							1. Cannot select a single "version" for package "cmake"
-							2. Cannot satisfy 'cmake@:3.17'
-							3. Cannot satisfy 'cmake@:3.16'
-							4. Cannot satisfy 'cmake@3.18:'
-							5. Cannot satisfy 'cmake@3.16'
-							6. Cannot satisfy 'cmake@3.18:'
-									required because hdf5 depends on cmake@3.18: when @1.13:
-									required because hdf5@1.14 ^cmake@3.16 requested explicitly
-							7. Cannot satisfy 'cmake@3.16'
-									required because hdf5@1.14 ^cmake@3.16 requested explicitly
-							8. Cannot satisfy 'cmake@3.18:' and 'cmake@3.16
-									required because hdf5@1.14 ^cmake@3.16 requested explicitly
-									required because hdf5 depends on cmake@3.18: when @1.13:
-									required because hdf5@1.14 ^cmake@3.16 requested explicitly
-							9. Cannot satisfy 'cmake@3.16' and 'cmake@3.18:
-									required because hdf5@1.14 ^cmake@3.16 requested explicitly
-									required because hdf5 depends on cmake@3.18: when @1.13:
-									required because hdf5@1.14 ^cmake@3.16 requested explicitly
-							10. Cannot satisfy 'cmake@3.12:' and 'cmake@3.16
-									required because hdf5@1.14 ^cmake@3.16 requested explicitly
-									required because hdf5 depends on cmake@3.12:
-									required because hdf5@1.14 ^cmake@3.16 requested explicitly
-						</code></pre>
-					</section>
-				</section>
-
 				<!-- OCI build caches -->
 				<section>
 					<section>
-						<h2>How to use OCI build caches?</h2>
+						<h2>Spack &amp; OCI images</h2>
 						<ul>
 							<li>Learn about build caches</li>
 							<li>Create container images</li>
 							<li>GitHub Actions and Packages</li>
-						</ul>
-					</section>
-					<section>
-						<h2>Follow along</h2>
-						<ul>
-							<li><a href="https://spack-tutorial.rtfd.io" target="_blank">https://spack-tutorial.rtfd.io</a></li>
-							<li>Click <strong>Binary Caches Tutorial</strong></li>
 						</ul>
 					</section>
 					<section>
@@ -948,6 +131,9 @@
 						</div>
 					</section>
 					<section>
+						<h2>How can I share these binaries?</h2>
+					</section>
+					<section>
 						<h2>Setup GitHub API token</h2>
 						<a href="https://github.com/settings/tokens/new">https://github.com/settings/tokens/new</a>
 					</section>
@@ -963,7 +149,7 @@
 					</section>
 					<section>
 						<h2>Make GitHub Package public</h2>
-						<a href="https://github.com/users/haampie/packages/container/cscs-tutorial/settings">https://github.com/users/haampie/packages/container/cscs-tutorial/settings</a>
+						<a href="https://github.com/users/haampie/packages/container/isc-tutorial/settings">https://github.com/users/haampie/packages/container/isc-tutorial/settings</a>
 						<img src="dist/images/github-public.png" class="stretch" />
 					</section>
 					<section>
@@ -983,40 +169,33 @@
 						</div>
 					</section>
 					<section>
-						<h2>Reuse concretization</h2>
-						<ul>
-							<li>The concretizer needs a build cache index</li>
-							<li>It's a "remote" database</li>
-							<li>Concretizer warns if not available</li>
-						</ul>
-					</section>
-					<section>
-						<h2>Reuse concretization</h2>
-						<ul>
-							<li>Create index with <pre><code class="shell">$ spack buildcache update-index &lt;name&gt;</code></pre></li>
-							<li>Slow reduction operation</li>
-							<li>Fetch all individual specs, upload single database</li>
-						</ul>
-					</section>
-					<section>
-						<div class="asciicast stretch">
-							<!--
-							{
-							"URL": "dist/recordings/5.cast"
-							} 
-							-->
+						<h2>Who can use this?</h2>
+						<div class="r-stack">
+							<ul class="fragment current-visible">
+								<li><strong>Spack users</strong> can install from the cache</li>
+								<li><strong>DevOps teams</strong> benefit from faster builds in CI/CD</li>
+								<li>Reproducible environments across teams</li>
+								<li><strong>But what about users who don't know Spack?</strong></li>
+							</ul>
+							<ul class="fragment">
+								<li><strong>The goal:</strong> Share your HPC software stack with <em>anyone</em></li>
+								<li>Container images that "just work"</li>
+								<li>No Spack knowledge required</li>
+							</ul>
 						</div>
 					</section>
 					<section>
-						<h2>Runnable container images</h2>
+						<h2>The plot twist</h2>
 						<ul>
 							<li>We can <code>spack install</code> from the cache</li>
-							<li>We can't yet <code>docker run</code> them</li>
-							<li class="fragment">Remember external <code>^glibc</code>?</li>
+							<li class="fragment">But we can also <code>docker run</code> them!</li>
+							<li class="fragment">Same binaries, different interface</li>
+							<li class="fragment"><strong><img src="dist/images/logo.svg" style="height: 1em; vertical-align: middle;" /> Spack <em>is</em> a container builder</strong></li>
 						</ul>
 					</section>
 					<section>
-						<h2>Add a base image of choice</h2>
+						<h2>Making containers runnable</h2>
+						<p>One flag turns your build cache into runnable containers:</p>
 						<pre><code class="text" data-trim data-noescape>
 						$ spack -e . buildcache push \
 							--force \
@@ -1024,9 +203,9 @@
 							# --base-image fedora:latest
 						</code></pre>
 						<ul>
-							<li>Works if base image glibc is &ge; ^glibc in Spack's DAG</li>
+							<li>Any base image works (if <code>glibc</code> is compatible)</li>
 							<li>Gives you a basic shell</li>
-							<li>And yet another system package manager</li>
+							<li class="fragment"><strong>No Dockerfile needed!</strong></li>
 						</ul>
 					</section>
 					<section>
@@ -1048,17 +227,16 @@
 						</div>
 					</section>
 					<section>
-						<h2>Tag an environment</h2>
+						<h2>Container composition made easy</h2>
 						<ul>
-							<li>By default: single root per container image</li>
-							<li>How can we compose container images?</li>
-							<li>Typically non-trivial: try and merge official CUDA and MKL container images</li>
-							<li class="fragment">... trivial in Spack due to <strong>single prefix per package</strong></li>
+							<li>Traditional containers: hard to combine</li>
+							<li class="fragment">Try merging official CUDA + MKL + Python images</li>
+							<li class="fragment">Spack: <strong>trivial</strong> due to single prefix per package</li>
+							<li class="fragment">Just add more specs to your environment!</li>
 						</ul>
 					</section>
 					<section>
-						<h2>Tag an environment</h2>
-						Works best with <code>unify:true</code>
+						<h2>Multi-package container</h2>
 						<pre><code class="shell" data-trim data-noescape>
 							$ spack -e . add julia vim
 							$ spack -e . install
@@ -1072,199 +250,33 @@
 						<div class="asciicast stretch">
 							<!--
 							{
-							"URL": "dist/recordings/8.cast"
-							} 
-							-->
-						</div>
-					</section>
-					<section>
-						<div class="asciicast stretch">
-							<!--
-							{
 							"URL": "dist/recordings/9.cast"
 							} 
 							-->
 						</div>
 					</section>
 					<section>
-						<h2>In summary</h2>
-						<ul>
-							<li><strong><code>spack install</code></strong> the same binaries you <strong><code>docker run</code></strong></li>
-							<li>Share binaries with users (un)familiar with Spack</li>
-							<li>Swap in your favorite distro as a base</li>
-							<li>Compose images from multiple Spack packages</li>
-						</ul>
-					</section>
-					<section>
-						<h2>Hands-on 1</h2>
-						<ol>
-							<li>Create a GitHub repo</li>
-							<li>Add a <strong><code>spack.yaml</code></strong> environment with some spec</li>
-							<li>Add <strong><code>.github/workflows/ci.yaml</code></strong></li>
-							<li>Use the <strong><code>spack/setup-spack</code></strong> action</li>
-							<li>Add a concretize step</li>
-							<li>Add an install step</li>
-							<li>Add a step that pushes to your GitHub packages using <code>${{ secrets.GITHUB_TOKEN }}</code></li>
-							<li>Verify that a second run uses the cache</li>
-						</ol>
-					</section>
-					<section>
-						<h2>Hands-on 2</h2>
-						<ol>
-							<li>Use <strong><code>skopeo</code></strong> to download a Spack-built image</li>
-							<li>Inspect the manifest / blob structure
-								<ul>
-									<li><code>jq &lt; [manifest]</code></li>
-									<li><code>tar tf [blob]</code></li>
-								</ul>
-							</li>
-						</ol>
-					</section>
-
-					<section>
-						<h2>What's an OCI registry again?</h2>
+						<h2>The best of both worlds</h2>
 						<div class="r-stack">
-							<ul class="fragment current-visible">
-								<li>Bunch of <strong>blobs</strong> and <strong>manifests</strong></li>
-								<li><strong>Blobs</strong> are tarballs named by sha256</li>
-								<li><strong>Manifests</strong> are tags &amp; list <strong>blobs</strong> as layers</li>
-								<li>One blob for every Spack package prefix</li>
-								<li>One manifest for every Spack package</li>
-								<li>... with many layers: all runtime deps included</li>
-							</ul>
-							<img src="dist/images/oci-structure.svg" class="fragment" />
+							<div class="fragment current-visible">
+								<h3>For Spack users:</h3>
+								<ul>
+									<li><strong><code>spack install</code></strong> from fast binary caches</li>
+									<li>Share builds across teams and CI/CD</li>
+									<li>Reproducible environments</li>
+								</ul>
+							</div>
+							<div class="fragment">
+								<h3>For everyone else:</h3>
+								<ul>
+									<li><strong><code>docker run</code></strong> the same binaries</li>
+									<li>No Spack installation required</li>
+									<li>Minimal, efficient containers</li>
+									<li>Easy composition of complex software stacks</li>
+									<li>Perfect for sharing HPC applications</li>
+								</ul>
+							</div>
 						</div>
-					</section>
-				</section>
-
-				<section>
-					<section>
-						<h2>Development and troubleshooting</h2>
-						<ul>
-							<li>Environments</li>
-							<li><code>spack develop</code></li>
-							<li><code>spack build-env</code></li>
-							<li>Troubleshooting builds</li>
-						</ul>
-					</section>
-					<section>
-						<h3>Development tools</h3>
-						I usually have <strong><code>~/dev/spack.yaml</code></strong>
-						<pre><code class="spec" data-trim data-noescape>
-						spack:
-						  specs:
-						  - ccache@4
-						  - python@3.11 +optimizations %clang 
-						  view:
-						    default:
-						      root: ./view
-						      link: run  # only put run deps in view
-						</code></pre>
-						Together with <strong><code>~/.bash_profile</code></strong>:
-						<pre><code class="bash" data-trim data-noescape>
-							export PATH="$HOME/dev/view/bin:$PATH"
-						</code></pre>
-						<p style="font-size: 0.5em;">and</p>
-						<pre><code>spack config add config:ccache:true</code></pre>
-					</section>
-					<section>
-						<h3>Developing a package</h3>
-						<ul><li>People often create a <strong><code>spack.yaml</code></strong> file with the dependencies of the package they want to develop</li></ul>
-						<pre class="spec"><code data-trim data-noescape>
-						spack:
-						  specs:
-						  - mpich@4 +fortran
-						  - cmake
-						  - gmake
-						  - openblas
-						  - cuda@11
-						  concretizer:
-						    unify: true
-						</code></pre>
-						<ul>
-							<li>But: <strong>spack env activate</strong> just sets up runtime variables &mdash; no <code>CC</code>, <code>CXX</code>, etc.</li>
-						</ul>
-					</section>
-					<section>
-						<h3>Developing a package</h3>
-						Better immediately
-						<pre><code>spack create -n my-package</code></pre>
-						<pre class="python"><code data-trim data-noescape>
-						class MyPackage(CMakePackage):
-						  git = "file:///path/to/repo"  # or https://...
-
-						  version("main", branch="main")
-
-						  depends_on("mpi")
-						  depends_on("blas")
-						  depends_on("cuda")
-						</code></pre>
-						and update <strong><code>spack.yaml</code></strong>
-						<pre class="spec"><code data-trim data-noescape>
-						spack:
-						  specs:
-						  - my-package ^cuda@11 ^mpich@4 +fortran ^openblas
-						</code></pre>
-					</section>
-					<section>
-						<h3>Developing a package</h3>
-						From there...
-						<pre class="shell"><code data-trim data-noescape>
-							$ spack -e . concretize
-							$ spack -e . install --only=dependencies
-						</code></pre>
-						and either manually run a build in a shell with all build environment variables set
-						<pre class="shell"><code data-trim data-noescape>
-							$ spack -e . build-env my-package -- /bin/bash -l
-						</code></pre>
-						or use <strong><code>spack develop</code></strong>
-					</section>
-					<section>
-						<h3>Developing a package</h3>
-						The <strong><code>spack develop</code></strong> command
-						<pre class="shell"><code data-trim data-noescape>
-							$ spack -e . develop \
-							    --path /path/to/my/sources \
-							    my-package@main
-							$ spack -e . concretize -f
-						</code></pre>
-						just updates the <strong><code>spack.yaml</code></strong> file:
-						<pre class="spec"><code data-trim data-noescape>
-						spack:
-						  specs:
-						  - my-package ^cuda@11 ^mpich@4 +fortran ^openblas
-						  develop:
-						    my-package:
-						      spec: my-package@=main
-						      path: /path/to/my/sources
-						</code></pre>
-					</section>
-					<section>
-						<h3>Developing a package</h3>
-						After concretization, you will see a "reserved" variant
-						<pre class="spec"><code data-noescape>my-package@main %gcc@13.2.0 dev_path=/path/to/my/sources</code></pre>
-						and <strong><code>spack install</code></strong> will automatically do an <em>overwrite</em> install if any of the source files change
-						<pre class="bash"><code data-noescape data-trim>
-							$ touch /path/to/my/sources/my-package.c
-							$ spack -e . install  # 🔁
-						</code></pre>
-					</section>
-					<section>
-						<h3>Useful in general</h3>
-						<ul>
-							<li>If a build fails, consider <strong><code>spack develop</code></strong></li>
-							<li>Make changes to the sources to get past a build failure <span class="fragment">... and submit a patch 😏</span></li>
-							<li class="fragment">Without <strong><code>spack develop</code></strong>: Spack often clears the temporary stage dir</li>
-							<li class="fragment">With <strong><code>spack develop</code></strong>: persistent stage dir</li>
-							<li class="fragment">Sometimes you still need <pre class="shell"><code>spack -e . build-env failing-pkg -- /bin/bash</code></pre> &mdash; better with environment than without!</li>
-						</ul>
-					</section>
-					<section>
-						<h3>Hands-on</h3>
-						<ul>
-							<li><a href="https://spack-tutorial.rtfd.io">https://spack-tutorial.rtfd.io</a></li>
-							<li>Click <strong>Developer Workflows Tutorial</strong></li>
-						</ul>
 					</section>
 				</section>
 			</div>
