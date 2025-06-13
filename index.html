@@ -35,7 +35,12 @@
 						<p>ISC 2025, Hamburg &mdash; Harmen Stoppels</p>
 					</section>
 					<section>
-						<img src="dist/images/commits-cscs.svg" class="stretch" />
+						<h2>This talk</h2>
+						<ol>
+							<li class="fragment"><strong>Quick Spack intro/refresher</strong></li>
+							<li class="fragment"><strong>Share binaries</strong> with Spack users</li>
+							<li class="fragment"><strong>Share binaries</strong> with everyone else</li>
+						</ol>
 					</section>
 				</section>
 				<!-- Spack refresher -->
@@ -44,7 +49,7 @@
 						<h2>Spack refresher</h2>
 						<ul>
 							<li>What is Spack?</li>
-							<li>Installing specs</li>
+							<li>Installing packages</li>
 							<li>Environments</li>
 							<li>Build from source vs. binaries</li>
 						</ul>
@@ -60,7 +65,7 @@
 						</ul>
 					</section>
 					<section>
-						<h2>Installing specs</h2>
+						<h2>Installing packages</h2>
 						<pre class="spec"><code data-trim data-noescape>
 							# Basic package
 							spack install python
@@ -102,15 +107,11 @@
 						</ul>
 					</section>
 				</section>
-				<!-- OCI build caches -->
+				<!-- Binary caches section -->
 				<section>
 					<section>
-						<h2>Spack &amp; OCI images</h2>
-						<ul>
-							<li>Learn about build caches</li>
-							<li>Create container images</li>
-							<li>GitHub Actions and Packages</li>
-						</ul>
+						<h1>Part 1: Binary Caches</h1>
+						<p>Sharing Spack builds with other Spack users</p>
 					</section>
 					<section>
 						<div class="asciicast stretch">
@@ -131,14 +132,6 @@
 						</div>
 					</section>
 					<section>
-						<h2>How can I share these binaries?</h2>
-					</section>
-					<section>
-						<h2>Setup GitHub API token</h2>
-						<a href="https://github.com/settings/tokens/new">https://github.com/settings/tokens/new</a>
-					</section>
-					<section data-background="dist/images/github-token.png"></section>
-					<section>
 						<div class="asciicast stretch">
 							<!--
 							{
@@ -148,15 +141,9 @@
 						</div>
 					</section>
 					<section>
-						<h2>Make GitHub Package public</h2>
-						<a href="https://github.com/users/haampie/packages/container/isc-tutorial/settings">https://github.com/users/haampie/packages/container/isc-tutorial/settings</a>
-						<img src="dist/images/github-public.png" class="stretch" />
-					</section>
-					<section>
 						<h2>Try out the build cache</h2>
 						<ul>
 							<li><code>spack install</code> should use it</li>
-							<li>No GitHub token should be required if public</li>
 						</ul>
 					</section>
 					<section>
@@ -167,6 +154,14 @@
 							} 
 							-->
 						</div>
+					</section>
+					</section>
+				</section>
+				<!-- Container images section -->
+				<section>
+					<section>
+						<h1>Part 2: Container Images</h1>
+						<p>The same binaries, now for everyone</p>
 					</section>
 					<section>
 						<h2>Who can use this?</h2>
@@ -185,28 +180,50 @@
 						</div>
 					</section>
 					<section>
-						<h2>The plot twist</h2>
+						<h2>Turns out...</h2>
 						<ul>
 							<li>We can <code>spack install</code> from the cache</li>
 							<li class="fragment">But we can also <code>docker run</code> them!</li>
 							<li class="fragment">Same binaries, different interface</li>
+							<li class="fragment"><strong>No rebuilding required!</strong></li>
 							<li class="fragment"><strong><img src="dist/images/logo.svg" style="height: 1em; vertical-align: middle;" /> Spack <em>is</em> a container builder</strong></li>
 						</ul>
 					</section>
 					<section>
 						<h2>Making containers runnable</h2>
-						<p>One flag turns your build cache into runnable containers:</p>
+						<p>Turns your <strong>existing</strong> binaries into runnable containers:</p>
 						<pre><code class="text" data-trim data-noescape>
-						$ spack -e . buildcache push \
-							--force \
-							--base-image ubuntu:24.04
-							# --base-image fedora:latest
+						$ spack -e . buildcache push --base-image ubuntu:24.04
 						</code></pre>
 						<ul>
 							<li>Any base image works (if <code>glibc</code> is compatible)</li>
 							<li>Gives you a basic shell</li>
 							<li class="fragment"><strong>No Dockerfile needed!</strong></li>
+							<li class="fragment"><strong>No rebuilding needed!</strong></li>
 						</ul>
+					</section>
+					<section>
+						<h2>Why is this special?</h2>
+						<div class="r-stack">
+							<div class="fragment current-visible">
+								<h3>Traditional approach:</h3>
+								<pre><code class="docker" data-trim>
+								# Dockerfile
+								FROM ubuntu:24.04
+								RUN apt-get update && ...
+								RUN spack install python numpy
+								</code></pre>
+								<p>Build locally → Write Dockerfile → <code>docker build</code> → Build again</p>
+							</div>
+							<div class="fragment">
+								<h3>Spack approach:</h3>
+								<pre><code class="shell" data-trim>
+								$ spack install python numpy    # Build locally
+								$ spack buildcache push --base-image ubuntu:24.04 ...
+								</code></pre>
+								<p>Build once → Containerize existing binaries → Done!</p>
+							</div>
+						</div>
 					</section>
 					<section>
 						<div class="asciicast stretch">
